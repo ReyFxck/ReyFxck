@@ -1,13 +1,13 @@
-<img align="right" width="256" src="assets/super-mario-world.gif" alt="Super Mario World Mario">
+<img align="right" width="256" src="https://giffiles.alphacoders.com/117/11700.gif" alt="Super Mario World Mario">
 
 # Hey, I'm Thomas! 👋
 
 🎮 My passion is **retro consoles**  
 🕹️ Especially the feared **PlayStation 2!**
 
-I'm **21 years old** and very curious about how everything works, so I'm always trying to improve, optimize, or revive things that already exist. :)
+I'm **21 years old** and very curious about how everything works, so I'm always trying to improve what already exists. :)
 
-Every day I'm learning more about **Python**, **C**, low-level programming, emulation, and **AI**.
+Every day I'm learning more about **Python**, **C**, and **AI**.
 
 <br clear="right"/>
 
