@@ -16,8 +16,8 @@ Every day I'm learning more about **Python**, **C**, and **AI**.
 ## 📊 GitHub Stats
 
 <p align="center">
-  <img height="170" src="https://github-readme-stats.vercel.app/api?username=ReyFxck&show_icons=true&include_all_commits=true&count_private=true&theme=github_dark&hide_border=true" alt="Thomas's GitHub stats">
-  <img height="170" src="https://github-readme-stats.vercel.app/api/top-langs/?username=ReyFxck&layout=compact&langs_count=10&theme=github_dark&hide_border=true" alt="Most used languages">
+  <img src="https://github-profile-summary-cards.vercel.app/api/cards/stats?username=ReyFxck&theme=github_dark" alt="GitHub stats">
+  <img src="https://github-profile-summary-cards.vercel.app/api/cards/productive-time?username=ReyFxck&theme=github_dark&utcOffset=-3" alt="Productive time">
 </p>
 
 <p align="center">
@@ -39,13 +39,8 @@ Every day I'm learning more about **Python**, **C**, and **AI**.
 </p>
 
 <p align="center">
-  <img src="https://github-profile-summary-cards.vercel.app/api/cards/repos-per-language?username=ReyFxck&theme=github_dark" alt="Repositories per language">
-  <img src="https://github-profile-summary-cards.vercel.app/api/cards/most-commit-language?username=ReyFxck&theme=github_dark" alt="Most committed languages">
-</p>
-
-<p align="center">
-  <img src="https://github-profile-summary-cards.vercel.app/api/cards/stats?username=ReyFxck&theme=github_dark" alt="GitHub stats">
-  <img src="https://github-profile-summary-cards.vercel.app/api/cards/productive-time?username=ReyFxck&theme=github_dark&utcOffset=-3" alt="Productive time">
+  <img src="https://github-profile-summary-cards.vercel.app/api/cards/repos-per-language?username=ReyFxck&theme=github_dark" alt="Top languages by repository">
+  <img src="https://github-profile-summary-cards.vercel.app/api/cards/most-commit-language?username=ReyFxck&theme=github_dark" alt="Top languages by commit">
 </p>
 
 ---
@@ -53,8 +48,18 @@ Every day I'm learning more about **Python**, **C**, and **AI**.
 ## 🧰 Languages & Tools
 
 <p align="center">
-  <img src="https://img.shields.io/badge/C-Programming-00599C?style=for-the-badge&logo=c&logoColor=white" alt="C">
-  <img src="https://img.shields.io/badge/Python-Learning-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/C%2B%2B-Used-00599C?style=for-the-badge&logo=cplusplus&logoColor=white" alt="C++">
+  <img src="https://img.shields.io/badge/C-Used-A8B9CC?style=for-the-badge&logo=c&logoColor=black" alt="C">
+  <img src="https://img.shields.io/badge/Assembly-Used-6E4C13?style=for-the-badge" alt="Assembly">
+  <img src="https://img.shields.io/badge/Python-Used-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Objective--C-Used-438EFF?style=for-the-badge&logo=apple&logoColor=white" alt="Objective-C">
+  <img src="https://img.shields.io/badge/Shell-Used-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white" alt="Shell">
+  <img src="https://img.shields.io/badge/Java-Used-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java">
+  <img src="https://img.shields.io/badge/HTML-Used-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML">
+  <img src="https://img.shields.io/badge/Metal-Used-555555?style=for-the-badge&logo=apple&logoColor=white" alt="Metal">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/PlayStation_2-Development-003791?style=for-the-badge&logo=playstation&logoColor=white" alt="PlayStation 2">
   <img src="https://img.shields.io/badge/Emulation-Retro_Development-8A2BE2?style=for-the-badge" alt="Emulation">
   <img src="https://img.shields.io/badge/Reverse_Engineering-Learning-FF6F00?style=for-the-badge" alt="Reverse Engineering">
