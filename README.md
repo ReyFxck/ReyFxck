@@ -1,6 +1,6 @@
-<img align="right" width="256" src="https://giffiles.alphacoders.com/117/11700.gif" alt="Super Mario World Mario">
+<img align="right" width="104" src="https://giffiles.alphacoders.com/117/11700.gif" alt="Super Mario World Mario">
 
-# Hey, I'm Thomas! 👋
+# Hey, I'm Thomas! 🫯~~~
 
 🎮 My passion is **retro consoles**  
 🕹️ Especially the feared **PlayStation 2!**
