@@ -38,7 +38,7 @@ jobs:
           set -euxo pipefail
           mkdir -p toolchain
           cd toolchain
-          curl -fL --retry 5 --retry-delay 3             "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/e7ea5dcad658178b289a45bb25251b63623ed2a4/clang-r596125.tar.gz"             -o clang.tar.gz
+          curl -fL --retry 5 --retry-delay 3             "https://github.com/bachnxuan/aosp_clang_mirror/releases/download/clang-r596125-15071444/clang-r596125.tar.gz"             -o clang.tar.gz
           mkdir clang
           tar -xzf clang.tar.gz -C clang
           echo "$GITHUB_WORKSPACE/toolchain/clang/bin" >> "$GITHUB_PATH"
@@ -113,6 +113,7 @@ jobs:
           set -euxo pipefail
           cd device_kernel
           export PATH="$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH"
+          export LOCALVERSION=""
           MAKE_ARGS="O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC=clang CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-"
           make $MAKE_ARGS miami_infinity_defconfig
           scripts/config --file out/.config             --enable KSU             --enable KSU_SUSFS             --disable KSU_TRACEPOINT_HOOK             --disable KSU_MANUAL_HOOK             --enable KSU_MULTI_MANAGER_SUPPORT             --enable KSU_SUSFS_SUS_PATH             --enable KSU_SUSFS_SUS_MOUNT             --enable KSU_SUSFS_SUS_KSTAT             --enable KSU_SUSFS_SPOOF_UNAME             --enable KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS             --enable KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG             --enable KSU_SUSFS_OPEN_REDIRECT             --enable KSU_SUSFS_SUS_MAP             --disable LOCALVERSION_AUTO             --set-str LOCALVERSION "-ZenX-g5bad3b0962dc"
@@ -128,6 +129,7 @@ jobs:
           set -euxo pipefail
           cd device_kernel
           export PATH="$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH"
+          export LOCALVERSION=""
           make -j"$(nproc)" O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC="ccache clang"             CROSS_COMPILE=aarch64-linux-gnu-             CROSS_COMPILE_ARM32=arm-linux-gnueabi-             2>&1 | tee "$GITHUB_WORKSPACE/build.log"
           test -s out/arch/arm64/boot/Image
 
