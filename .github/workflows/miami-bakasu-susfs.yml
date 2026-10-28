@@ -1,0 +1,159 @@
+name: Miami BakaSU SUSFS build
+
+on:
+  push:
+    branches:
+      - miami-bakasu-susfs-build-20261028
+    paths:
+      - ".github/workflows/miami-bakasu-susfs.yml"
+      - "miami-build/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      KERNEL_COMMIT: 5bad3b0962dcf3d0833b46f00fe383edb1b97ea3
+      BAKASU_COMMIT: d5e9e025b8b49155f8014684d64c91742b465f65
+      PATCHER_COMMIT: dcd789634247c77d8549a42aef232c680a905585
+      KBUILD_BUILD_USER: build-user
+      KBUILD_BUILD_HOST: build-host
+      KBUILD_BUILD_TIMESTAMP: "Sat Oct 17 02:58:33 UTC 2026"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git curl wget ca-certificates build-essential             flex bison bc libssl-dev libelf-dev ccache zip unzip xz-utils             gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi device-tree-compiler             python3 rsync kmod lz4
+
+      - name: Get exact Android clang r596125
+        run: |
+          set -euxo pipefail
+          mkdir -p toolchain
+          cd toolchain
+          curl -fL --retry 5 --retry-delay 3             "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/e7ea5dcad658178b289a45bb25251b63623ed2a4/clang-r596125.tar.gz"             -o clang.tar.gz
+          mkdir clang
+          tar -xzf clang.tar.gz -C clang
+          echo "$GITHUB_WORKSPACE/toolchain/clang/bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/toolchain/clang/bin/clang" --version
+
+      - name: Clone exact Miami kernel source
+        run: |
+          set -euxo pipefail
+          git init device_kernel
+          cd device_kernel
+          git remote add origin https://github.com/LineageOS/android_kernel_motorola_sm6375.git
+          git fetch --depth=1 origin "$KERNEL_COMMIT"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$KERNEL_COMMIT"
+          cp "$GITHUB_WORKSPACE/miami-build/miami_kernel.config"              arch/arm64/configs/miami_infinity_defconfig
+
+      - name: Integrate pinned BakaSU rc5
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          curl -fLSs             "https://raw.githubusercontent.com/Baka-SU/BakaSU/$BAKASU_COMMIT/kernel/setup.sh"             -o /tmp/bakasu-setup.sh
+          sh /tmp/bakasu-setup.sh "$BAKASU_COMMIT"
+          test -e drivers/kernelsu
+          test "$(git -C KernelSU rev-parse HEAD)" = "$BAKASU_COMMIT"
+
+      - name: Apply SUSFS 5.4 kernel-side patch
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          curl -fL             "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/$PATCHER_COMMIT/Patches/Patch/susfs_patch_to_5.4.patch"             -o /tmp/susfs-5.4.patch
+          set +e
+          patch -p1 --forward < /tmp/susfs-5.4.patch | tee "$GITHUB_WORKSPACE/susfs-patch.log"
+          rc=${PIPESTATUS[0]}
+          set -e
+          find . -name "*.rej" -print | tee "$GITHUB_WORKSPACE/susfs-rejects.txt"
+          if [ -s "$GITHUB_WORKSPACE/susfs-rejects.txt" ]; then
+            echo "SUSFS base patch produced rejects."
+            exit 20
+          fi
+          if [ "$rc" -ne 0 ]; then
+            echo "SUSFS base patch failed without .rej files."
+            exit "$rc"
+          fi
+
+      - name: Apply modern BakaSU SUSFS inline hooks
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          curl -fL             "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/$PATCHER_COMMIT/Patches/susfs_inline_hook_patches.sh"             -o /tmp/susfs-inline.sh
+          export FIRST_VERSION=5
+          export SECOND_VERSION=4
+          bash /tmp/susfs-inline.sh | tee "$GITHUB_WORKSPACE/susfs-inline.log"
+          find . -name "*.rej" -print | tee -a "$GITHUB_WORKSPACE/susfs-rejects.txt"
+          if [ -s "$GITHUB_WORKSPACE/susfs-rejects.txt" ]; then
+            echo "SUSFS inline patch produced rejects."
+            exit 21
+          fi
+
+      - name: Configure BakaSU plus SUSFS while preserving Miami ABI name
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          export PATH="$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH"
+          MAKE_ARGS="O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC=clang CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-"
+          make $MAKE_ARGS miami_infinity_defconfig
+          scripts/config --file out/.config             --enable KSU             --enable KSU_SUSFS             --disable KSU_TRACEPOINT_HOOK             --disable KSU_MANUAL_HOOK             --enable KSU_MULTI_MANAGER_SUPPORT             --enable KSU_SUSFS_SUS_PATH             --enable KSU_SUSFS_SUS_MOUNT             --enable KSU_SUSFS_SUS_KSTAT             --enable KSU_SUSFS_SPOOF_UNAME             --enable KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS             --enable KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG             --enable KSU_SUSFS_OPEN_REDIRECT             --enable KSU_SUSFS_SUS_MAP             --disable LOCALVERSION_AUTO             --set-str LOCALVERSION "-ZenX-g5bad3b0962dc"
+          make $MAKE_ARGS olddefconfig
+          grep -E '^(CONFIG_KSU|CONFIG_KSU_SUSFS|CONFIG_LOCALVERSION|CONFIG_MODVERSIONS|CONFIG_CFI_CLANG|CONFIG_LTO_CLANG)' out/.config             | tee "$GITHUB_WORKSPACE/final-config-key.txt"
+          grep -q '^CONFIG_KSU=y$' out/.config
+          grep -q '^CONFIG_KSU_SUSFS=y$' out/.config
+          grep -q '^CONFIG_LOCALVERSION="-ZenX-g5bad3b0962dc"$' out/.config
+          grep -q '^# CONFIG_LOCALVERSION_AUTO is not set$' out/.config
+
+      - name: Build kernel
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          export PATH="$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH"
+          make -j"$(nproc)" O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC="ccache clang"             CROSS_COMPILE=aarch64-linux-gnu-             CROSS_COMPILE_ARM32=arm-linux-gnueabi-             2>&1 | tee "$GITHUB_WORKSPACE/build.log"
+          test -s out/arch/arm64/boot/Image
+
+      - name: Validate built Image
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          IMAGE=out/arch/arm64/boot/Image
+          file "$IMAGE" | tee "$GITHUB_WORKSPACE/image-file.txt"
+          sha256sum "$IMAGE" | tee "$GITHUB_WORKSPACE/Image.sha256"
+          strings "$IMAGE" | grep -m1 -E '^Linux version 5\.4\.302-ZenX-g5bad3b0962dc'             | tee "$GITHUB_WORKSPACE/kernel-version.txt"
+          strings "$IMAGE" | grep -m1 -E 'BakaSU|KernelSU'             | tee "$GITHUB_WORKSPACE/bakasu-marker.txt" || true
+          test "$(stat -c%s "$IMAGE")" -gt 30000000
+          test "$(stat -c%s "$IMAGE")" -lt 60000000
+
+      - name: Collect artifacts
+        if: always()
+        run: |
+          set +e
+          mkdir -p artifacts/rejects
+          cp build.log artifacts/ 2>/dev/null
+          cp susfs-patch.log artifacts/ 2>/dev/null
+          cp susfs-inline.log artifacts/ 2>/dev/null
+          cp susfs-rejects.txt artifacts/ 2>/dev/null
+          cp final-config-key.txt artifacts/ 2>/dev/null
+          cp image-file.txt artifacts/ 2>/dev/null
+          cp Image.sha256 artifacts/ 2>/dev/null
+          cp kernel-version.txt artifacts/ 2>/dev/null
+          cp bakasu-marker.txt artifacts/ 2>/dev/null
+          cp device_kernel/out/.config artifacts/final.config 2>/dev/null
+          cp device_kernel/out/arch/arm64/boot/Image artifacts/Image 2>/dev/null
+          find device_kernel -name "*.rej" -exec cp --parents {} artifacts/rejects/ \; 2>/dev/null
+
+      - name: Upload build output and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: miami-bakasu-susfs-build
+          path: artifacts/
+          if-no-files-found: warn
