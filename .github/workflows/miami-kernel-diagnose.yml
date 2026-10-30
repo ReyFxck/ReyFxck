@@ -1,0 +1,178 @@
+name: Miami kernel compatibility diagnose
+
+on:
+  push:
+    branches:
+      - miami-kernel-diagnose-20261030
+    paths:
+      - ".github/workflows/miami-kernel-diagnose.yml"
+      - "miami-build/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - stock-control
+          - bakasu-only
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      VARIANT: ${{ matrix.variant }}
+      KERNEL_COMMIT: 5bad3b0962dcf3d0833b46f00fe383edb1b97ea3
+      BAKASU_COMMIT: d5e9e025b8b49155f8014684d64c91742b465f65
+      STOCK_IMAGE_SHA256: 6a746aa1de9d2b88c2bd66f0d85a9ada10b87575f4c7992c9a019416b4c7d1d7
+      STOCK_IMAGE_SIZE: "39197184"
+      KBUILD_BUILD_USER: build-user
+      KBUILD_BUILD_HOST: build-host
+      KBUILD_BUILD_TIMESTAMP: "Sat Oct 17 02:58:33 UTC 2026"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git curl ca-certificates build-essential flex bison bc \
+            libssl-dev libelf-dev ccache zip unzip xz-utils gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabi device-tree-compiler python3 rsync kmod lz4
+
+      - name: Get exact stock Android clang
+        run: |
+          set -euxo pipefail
+          mkdir -p toolchain
+          cd toolchain
+          curl -fL --retry 5 --retry-delay 3 \
+            "https://github.com/bachnxuan/aosp_clang_mirror/releases/download/clang-r596125-15071444/clang-r596125.tar.gz" \
+            -o clang.tar.gz
+          mkdir clang
+          tar -xzf clang.tar.gz -C clang
+          echo "$GITHUB_WORKSPACE/toolchain/clang/bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/toolchain/clang/bin/clang" --version | tee "$GITHUB_WORKSPACE/clang-version.txt"
+
+      - name: Clone exact public source commit
+        run: |
+          set -euxo pipefail
+          git init device_kernel
+          cd device_kernel
+          git remote add origin https://github.com/LineageOS/android_kernel_motorola_sm6375.git
+          git fetch --depth=1 origin "$KERNEL_COMMIT"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$KERNEL_COMMIT"
+
+      - name: Integrate BakaSU only
+        if: matrix.variant == 'bakasu-only'
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          curl -fLSs \
+            "https://raw.githubusercontent.com/Baka-SU/BakaSU/$BAKASU_COMMIT/kernel/setup.sh" \
+            -o /tmp/bakasu-setup.sh
+          sh /tmp/bakasu-setup.sh "$BAKASU_COMMIT"
+          test -e drivers/kernelsu
+          test "$(git -C KernelSU rev-parse HEAD)" = "$BAKASU_COMMIT"
+          printf '%s' '-g5bad3b0962dc' > .scmversion
+
+      - name: Configure exact stock base
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          export PATH="$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH"
+          MAKE_ARGS="O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC=clang CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-"
+          mkdir -p out
+          cp "$GITHUB_WORKSPACE/miami-build/miami_kernel.config" out/.config
+
+          if [ "$VARIANT" = "bakasu-only" ]; then
+            scripts/config --file out/.config \
+              --enable KSU \
+              --enable KSU_MANUAL_HOOK \
+              --disable KSU_TRACEPOINT_HOOK \
+              --disable KSU_SUSFS \
+              --enable KSU_MULTI_MANAGER_SUPPORT
+          fi
+
+          make $MAKE_ARGS olddefconfig
+          cp out/.config "$GITHUB_WORKSPACE/final.config"
+
+          grep -q '^CONFIG_LOCALVERSION="-ZenX"$' out/.config
+          grep -q '^CONFIG_LOCALVERSION_AUTO=y$' out/.config
+          grep -q '^CONFIG_MODVERSIONS=y$' out/.config
+
+          if [ "$VARIANT" = "bakasu-only" ]; then
+            grep -q '^CONFIG_KSU=y$' out/.config
+            grep -q '^CONFIG_KSU_MANUAL_HOOK=y$' out/.config
+            grep -q '^# CONFIG_KSU_SUSFS is not set$' out/.config
+          else
+            ! grep -q '^CONFIG_KSU=y$' out/.config
+          fi
+
+      - name: Build kernel
+        run: |
+          set -euxo pipefail
+          cd device_kernel
+          export PATH="$GITHUB_WORKSPACE/toolchain/clang/bin:$PATH"
+          make -j"$(nproc)" O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC="ccache clang" \
+            CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            2>&1 | tee "$GITHUB_WORKSPACE/build.log"
+          test -s out/arch/arm64/boot/Image
+
+      - name: Validate and compare
+        run: |
+          set -euxo pipefail
+          IMAGE=device_kernel/out/arch/arm64/boot/Image
+          SHA="$(sha256sum "$IMAGE" | awk '{print $1}')"
+          SIZE="$(stat -c%s "$IMAGE")"
+          VERSION="$(strings -a "$IMAGE" | grep -m1 -F 'Linux version 5.4.302-ZenX-g5bad3b0962dc ' || true)"
+
+          printf '%s\n' "$SHA" > Image.sha256
+          printf '%s\n' "$SIZE" > Image.size
+          printf '%s\n' "$VERSION" > kernel-version.txt
+
+          echo "variant=$VARIANT" | tee compare.txt
+          echo "sha=$SHA" | tee -a compare.txt
+          echo "size=$SIZE" | tee -a compare.txt
+          echo "stock_sha=$STOCK_IMAGE_SHA256" | tee -a compare.txt
+          echo "stock_size=$STOCK_IMAGE_SIZE" | tee -a compare.txt
+
+          if [ "$SHA" = "$STOCK_IMAGE_SHA256" ]; then
+            echo "exact_stock_sha_match=yes" | tee -a compare.txt
+          else
+            echo "exact_stock_sha_match=no" | tee -a compare.txt
+          fi
+
+          if [ "$SIZE" = "$STOCK_IMAGE_SIZE" ]; then
+            echo "exact_stock_size_match=yes" | tee -a compare.txt
+          else
+            echo "exact_stock_size_match=no" | tee -a compare.txt
+          fi
+
+          test -n "$VERSION"
+          grep -q 'Android (15071444, +pgo, +bolt, +lto, +mlgo, based on r596125) clang version 22.0.2' kernel-version.txt
+
+      - name: Collect artifacts
+        if: always()
+        run: |
+          set +e
+          mkdir -p artifacts
+          cp device_kernel/out/arch/arm64/boot/Image artifacts/ 2>/dev/null
+          cp build.log artifacts/ 2>/dev/null
+          cp final.config artifacts/ 2>/dev/null
+          cp clang-version.txt artifacts/ 2>/dev/null
+          cp Image.sha256 artifacts/ 2>/dev/null
+          cp Image.size artifacts/ 2>/dev/null
+          cp kernel-version.txt artifacts/ 2>/dev/null
+          cp compare.txt artifacts/ 2>/dev/null
+
+      - name: Upload diagnostic artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: miami-${{ matrix.variant }}
+          path: artifacts/
+          if-no-files-found: warn
