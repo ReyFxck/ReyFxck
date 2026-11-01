@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <overlay
+        android:targetPackage="android"
+        android:category="android.theme.customization.signal_icon"
+        android:priority="1" />
+    <application
+        android:label="Ios Signal (fixed test)"
+        android:hasCode="false" />
+</manifest>
