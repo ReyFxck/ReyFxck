@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Axion IosSignal Preview Fix</string>
+    <string name="module_description">Replaces only the four IosSignal preview drawables in AxThemeStore.</string>
+</resources>
