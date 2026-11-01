@@ -2,7 +2,7 @@ package com.reyfxck.axioniossignalpreview;
 
 import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookZygoteInit;
-import de.robv.android.xposed.XModuleResources;
+import android.content.res.XModuleResources;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 
