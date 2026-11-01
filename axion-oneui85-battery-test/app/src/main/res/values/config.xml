@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- One UI 8.5-inspired compact pill battery -->
+    <integer name="config_batteryOverrideStyle">0</integer>
+
+    <!-- Logical drawing viewport. The final status-bar view is scaled by SystemUI. -->
+    <integer name="config_batterymeterWidth">22</integer>
+    <integer name="config_batterymeterHeight">10</integer>
+
+    <bool name="config_batterymeterHorizontalFill">true</bool>
+    <bool name="config_batterymeterReverseFill">false</bool>
+    <bool name="config_batterymeterDualTone">true</bool>
+    <bool name="config_batterymeterPowerSaveDrawError">false</bool>
+
+    <!-- Fully rounded fill, matching the slim One UI 8.5 capsule. -->
+    <integer name="config_batterymeterLevelCornerRadius">5</integer>
+    <integer name="config_batterymeterCriticalLevel">15</integer>
+
+    <!-- Knockout percentage centered inside the pill. -->
+    <integer name="config_batterymeterTextStyle">3</integer>
+    <integer name="config_batterymeterTextSizePct">64</integer>
+    <bool name="config_batterymeterGlyphFollowFrame">false</bool>
+
+    <bool name="config_batterymeterBoltKnockout">true</bool>
+    <bool name="config_themedBatteryPercentWhileCharging">true</bool>
+
+    <color name="config_batterymeterChargingFillColor">#FF34C759</color>
+    <color name="config_batterymeterPowerSaveFillColor">#FFFFCC0A</color>
+
+    <string name="config_batterymeterPerimeterPath" translatable="false">
+        M5,0 C2.24,0 0,2.24 0,5 C0,7.76 2.24,10 5,10 L17,10 C19.76,10 22,7.76 22,5 C22,2.24 19.76,0 17,0 L5,0 Z
+    </string>
+
+    <string name="config_batterymeterErrorPerimeterPath" translatable="false">
+        @string/config_batterymeterPerimeterPath
+    </string>
+
+    <string name="config_batterymeterFillMask" translatable="false">
+        M5,0 C2.24,0 0,2.24 0,5 C0,7.76 2.24,10 5,10 L17,10 C19.76,10 22,7.76 22,5 C22,2.24 19.76,0 17,0 L5,0 Z
+    </string>
+
+    <!-- Right-side lightning mark; SystemUI knocks it out while charging. -->
+    <string name="config_batterymeterBoltPath" translatable="false">
+        M18.45,4.20 L20.05,4.20 Q20.50,4.25 20.22,4.63 L17.42,8.05
+        C17.18,8.30 16.70,8.12 16.93,7.55 L17.72,5.60 L16.12,5.60
+        Q15.67,5.55 15.95,5.17 L18.75,1.75 C18.99,1.50 19.47,1.68 19.24,2.25 Z
+    </string>
+
+    <!-- Reuse a compact leaf/plus-like power-save glyph area on the right. -->
+    <string name="config_batterymeterPowersavePath" translatable="false">
+        M18.7,2.3 C17.1,2.2 15.8,2.5 15.0,3.5
+        C14.1,4.7 14.4,6.0 15.1,6.7
+        C15.6,7.2 16.0,7.2 16.4,7.0
+        C16.7,6.8 17.0,6.6 17.4,6.4
+        C17.0,7.1 16.5,7.7 15.7,8.1
+        C16.9,8.5 18.2,8.2 19.0,7.4
+        C20.0,6.3 20.1,4.3 19.8,2.8
+        C19.7,2.4 19.2,2.3 18.7,2.3 Z
+    </string>
+</resources>

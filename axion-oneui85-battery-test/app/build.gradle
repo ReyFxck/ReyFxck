@@ -1,0 +1,26 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.android.systemui.battery.oneui85'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.android.systemui.battery.oneui85'
+        minSdk 35
+        targetSdk 35
+        versionCode 1
+        versionName '0.1-test'
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+    }
+}
