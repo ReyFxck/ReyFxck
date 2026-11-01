@@ -38,13 +38,13 @@ jobs:
 
       - name: Build APKs
         working-directory: axion-iossignal-test
-        run: gradle :app:assembleDebug :app:assembleRelease --stacktrace
+        run: gradle :appsysui:assembleDebug :appsysui:assembleRelease --stacktrace
 
       - name: Collect APKs
         run: |
           mkdir -p out
-          cp axion-iossignal-test/app/build/outputs/apk/debug/app-debug.apk out/IosSignalFixed-test-debug.apk
-          cp axion-iossignal-test/app/build/outputs/apk/release/app-release.apk out/IosSignalFixed-test-release.apk
+          cp axion-iossignal-test/appsysui/build/outputs/apk/debug/appsysui-debug.apk out/IosSignalFixed-test-debug.apk
+          cp axion-iossignal-test/appsysui/build/outputs/apk/release/appsysui-release.apk out/IosSignalFixed-test-release.apk
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
