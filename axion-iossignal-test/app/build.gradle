@@ -10,14 +10,12 @@ android {
         applicationId 'com.android.systemui.signalbar_ar'
         minSdk 35
         targetSdk 35
-        versionCode 4
-        versionName '1.0.3-test'
+        versionCode 5
+        versionName '1.0.4-aosp-test'
     }
 
     buildTypes {
-        debug {
-            minifyEnabled false
-        }
+        debug { minifyEnabled false }
         release {
             minifyEnabled false
             signingConfig signingConfigs.debug
