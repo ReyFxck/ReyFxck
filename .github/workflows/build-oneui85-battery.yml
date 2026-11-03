@@ -1,4 +1,4 @@
-name: Build One UI 8.5 battery test
+name: Build One UI 8 battery test
 
 on:
   push:
@@ -35,10 +35,10 @@ jobs:
       - name: Collect
         run: |
           mkdir -p out
-          cp axion-oneui85-battery-test/app/build/outputs/apk/debug/app-debug.apk out/OneUI85Battery-test-debug.apk
-          cp axion-oneui85-battery-test/app/build/outputs/apk/release/app-release.apk out/OneUI85Battery-test-release.apk
+          cp axion-oneui85-battery-test/app/build/outputs/apk/debug/app-debug.apk out/OneUI8Battery-test-debug.apk
+          cp axion-oneui85-battery-test/app/build/outputs/apk/release/app-release.apk out/OneUI8Battery-test-release.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: OneUI85Battery-test-apks
+          name: OneUI8Battery-test-apks
           path: out/*.apk
           if-no-files-found: error
