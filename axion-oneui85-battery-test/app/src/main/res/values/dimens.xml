@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+         Axion's default unified battery slot is 20.6sp x 12sp.
+         That is wider than Samsung's 3:2 capsule and stretches the theme.
+         Keep a 3:2 slot and give the curves one extra vertical sp for cleaner antialiasing.
+    -->
+    <dimen name="status_bar_battery_unified_icon_width">19.5sp</dimen>
+    <dimen name="status_bar_battery_unified_icon_height">13sp</dimen>
+</resources>
