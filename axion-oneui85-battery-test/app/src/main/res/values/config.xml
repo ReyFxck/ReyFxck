@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- One UI 8.5-inspired battery using dimensions recovered from Samsung SystemUI. -->
+    <!-- One UI 8 style, adapted to Axion's status-bar renderer. -->
     <integer name="config_batteryOverrideStyle">0</integer>
 
-    <!-- SamsungBatteryMeterDrawable base geometry: 24dp x 16dp. -->
+    <!-- Keep Samsung's 3:2 capsule ratio. -->
     <integer name="config_batterymeterWidth">24</integer>
     <integer name="config_batterymeterHeight">16</integer>
 
@@ -12,13 +12,12 @@
     <bool name="config_batterymeterDualTone">true</bool>
     <bool name="config_batterymeterPowerSaveDrawError">false</bool>
 
-    <!-- Samsung uses radius = height * 0.5 = 8dp. -->
     <integer name="config_batterymeterLevelCornerRadius">8</integer>
     <integer name="config_batterymeterCriticalLevel">15</integer>
 
-    <!-- Samsung font size is height * 0.78. -->
+    <!-- Axion uses vector digit glyphs, so Samsung's raw 0.78 ratio is too large here. -->
     <integer name="config_batterymeterTextStyle">3</integer>
-    <integer name="config_batterymeterTextSizePct">78</integer>
+    <integer name="config_batterymeterTextSizePct">62</integer>
     <bool name="config_batterymeterGlyphFollowFrame">false</bool>
 
     <bool name="config_batterymeterBoltKnockout">true</bool>
@@ -27,8 +26,17 @@
     <color name="config_batterymeterChargingFillColor">#FF34C759</color>
     <color name="config_batterymeterPowerSaveFillColor">#FFFFCC0A</color>
 
+    <!--
+         0.5-unit inset preserves the antialiased edge instead of clipping it
+         exactly on the drawable boundary. 23x15 visible capsule, 7.5 radius.
+    -->
     <string name="config_batterymeterPerimeterPath" translatable="false">
-        M8,0 C3.58,0 0,3.58 0,8 C0,12.42 3.58,16 8,16 L16,16 C20.42,16 24,12.42 24,8 C24,3.58 20.42,0 16,0 L8,0 Z
+        M8,0.5 H16
+        C20.142,0.5 23.5,3.858 23.5,8
+        C23.5,12.142 20.142,15.5 16,15.5
+        H8
+        C3.858,15.5 0.5,12.142 0.5,8
+        C0.5,3.858 3.858,0.5 8,0.5 Z
     </string>
 
     <string name="config_batterymeterErrorPerimeterPath" translatable="false">
@@ -36,16 +44,33 @@
     </string>
 
     <string name="config_batterymeterFillMask" translatable="false">
-        M8,0 C3.58,0 0,3.58 0,8 C0,12.42 3.58,16 8,16 L16,16 C20.42,16 24,12.42 24,8 C24,3.58 20.42,0 16,0 L8,0 Z
+        @string/config_batterymeterPerimeterPath
     </string>
 
-    <!-- Samsung 9x9 charging bolt path, positioned at the right side of the 24x16 pill. -->
+    <!-- Compact charging bolt, kept clear of the centered percentage. -->
     <string name="config_batterymeterBoltPath" translatable="false">
-        M22.1225,7.3069L18.2436,11.8778C17.9203,12.1657 17.6059,11.8854 17.6956,11.648L19.1969,8.3537C19.2246,8.2779 19.1691,8.1984 19.0895,8.1984L17.2195,8.1984C16.8811,8.1984 16.6576,7.8448 16.8041,7.5393L18.3648,4.2626C18.4405,4.1023 18.6034,4 18.7802,4L20.2815,4C20.6287,4 20.851,4.3687 20.6893,4.6755L19.7941,6.3688C19.7524,6.4445 19.808,6.538 19.8951,6.538L21.7803,6.538C22.1793,6.538 22.3889,7.0102 22.1225,7.3069Z
+        M20.60,6.30 L18.35,9.05
+        C18.08,9.33 17.70,9.12 17.82,8.78
+        L18.62,7.02 L17.38,7.02
+        C17.05,7.02 16.88,6.70 17.05,6.40
+        L19.25,3.70
+        C19.50,3.42 19.90,3.62 19.78,3.98
+        L19.15,5.42 L20.28,5.42
+        C20.68,5.42 20.86,6.00 20.60,6.30 Z
     </string>
 
-    <!-- Samsung power-save leaf path, positioned at the right side. -->
     <string name="config_batterymeterPowersavePath" translatable="false">
-        M20.1674,4.5288C18.3314,4.5288 16.842,6.0349 16.842,7.8917C16.842,8.3916 16.9675,8.8539 17.1592,9.2713C17.4601,9.1283 17.7201,8.9391 18.0118,8.7028L19.5923,7.3997C19.6461,7.3551 19.688,7.3226 19.7175,7.3026C19.9313,7.161 20.219,7.2131 20.3663,7.4221C20.5213,7.6308 20.4845,7.9217 20.2852,8.0856L18.8034,9.3162C18.1841,9.8307 17.6531,10.2108 16.8642,10.4122C16.5619,10.5166 16.2521,10.5763 15.9426,10.5763C15.6992,10.5763 15.5,10.7777 15.5,11.0238C15.5,11.2698 15.6992,11.4712 15.9426,11.4712C16.7536,11.4712 17.5498,11.1879 18.2871,10.6734C18.8253,11.0459 19.4742,11.2698 20.1747,11.2698C22.0106,11.2698 23.5,9.7634 23.5,7.9066L23.5,4.5437L20.1674,4.5288Z
+        M20.15,4.65
+        C18.45,4.65 17.05,6.02 17.05,7.75
+        C17.05,8.22 17.16,8.65 17.36,9.05
+        C17.70,8.90 18.03,8.67 18.36,8.40
+        L19.62,7.38
+        C19.86,7.18 20.22,7.22 20.42,7.47
+        C20.62,7.73 20.56,8.08 20.32,8.28
+        L19.05,9.33
+        C18.53,9.77 18.02,10.10 17.35,10.30
+        C18.05,10.77 18.90,11.02 19.78,11.02
+        C21.67,11.02 23.20,9.53 23.20,7.68
+        V4.67 Z
     </string>
 </resources>
