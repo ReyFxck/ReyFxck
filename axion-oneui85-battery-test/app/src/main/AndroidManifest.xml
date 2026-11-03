@@ -9,7 +9,7 @@
         android:isStatic="false" />
 
     <application
-        android:label="One UI 8.5 Battery"
+        android:label="One UI 8 Battery"
         android:hasCode="false">
         <meta-data
             android:name="axion_theme"
